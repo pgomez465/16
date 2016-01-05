@@ -1,0 +1,72 @@
+html, body {
+	height: 100%;
+}
+
+.app-container {
+	position: absolute;
+	top: 50px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+.chat-container {
+	height: 100%;
+}
+
+.video-window {
+	background-color: #000;
+}
+
+.chat-window {
+	height: 100%;
+	//background-color: #0f0;
+
+	position: relative;
+}
+
+@chat-header-height: 34px;
+@chat-entry-height: 34px;
+
+.chat-header {
+	height: @chat-header-height;
+}
+
+.chat-messages {
+	position: absolute;
+	bottom: @chat-entry-height;
+	top: @chat-header-height;
+	left: 0;
+	right: 0;
+	overflow-y: scroll;
+
+	.message {
+		display: inline-block;
+		clear: both;
+		margin: 5px;
+		padding: 0.5em;
+		border-radius: 0.4em;
+	}
+
+	.mine {
+		float: right;
+		background-color: #aaf;
+	}
+
+	.theirs {
+		float: left;
+		background-color: #faa;
+	}
+}
+
+.chat-entry {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: flex;
+
+	input {
+		flex: 1;
+	}
+}

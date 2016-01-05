@@ -1,0 +1,22 @@
+<div class="app-container">
+	<div class="container chat-container">
+		<div class="video-window col-md-8">
+			<video width="100%"></video>
+		</div>
+		<div class="chat-window col-md-4">
+			<div id="chat-header" class="chat-header">
+				Chatting with Melanie
+			</div>
+			<div id="chat-messages" class="chat-messages">
+				<div class="message mine">Yo</div>
+				<div class="message theirs">Sup</div>
+			</div>
+			<div id="chat-entry" class="chat-entry form-inline">
+				<input id="chat-message" type="text" placeholder="Message" class="form-control" />
+				<button id="chat-send" type="button" class="btn btn-default">Send</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{{addScript "/js/index.js"}}
