@@ -1,7 +1,11 @@
 import Lemon				from './lemon';
 
 // Create the application
-const lemon = new Lemon();
+const lemon = new Lemon({
+	sessionSecret: 'ArHbMynmpls1YY330Dma'
+});
+
+lemon.initialize();
 
 // Start the application
 lemon.start(() => {

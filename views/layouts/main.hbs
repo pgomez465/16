@@ -28,6 +28,9 @@
 						<li class="active"><a href="/">Chat</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
+						{{#if user}}
+						<li><p class="navbar-text">Signed in as</p></li>
+						{{/if}}
 						<li><a href="/login">Login</a></li>
 						<li><a href="/logout">Logout</a></li>
 					</ul>

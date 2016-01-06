@@ -1,23 +1,33 @@
 import http					from 'http';
 import express				from 'express';
+import session				from 'express-session';
+import bodyParser			from 'body-parser';
 import socketIO				from 'socket.io';
 import expressHandlebars	from 'express-handlebars';
 import handlebars			from 'handlebars';
+import passport				from 'passport';
+import LocalStrategy		from 'passport-local';
+
 import * as constants		from './constants';
+import User					from './models/user';
 
 export default class Lemon {
-	constructor() {
+	constructor(options = {}) {
 		// Set defaults
-		this._properties = {
+		this._properties = Object.assign({
 			port: 1337
-		};
+		}, options);
+	}
 
+	initialize() {
 		// Create the Application
 		this.app = express();
 
 		// Setup socket.io
 		this.server = http.Server(this.app);
 		this.io = socketIO(this.server);
+
+		this.passport = passport;
 
 		// Load configuration
 		this._configure();
@@ -76,6 +86,45 @@ export default class Lemon {
 		if (process.env.NODE_ENV !== 'production') {
 			this.app.set('json spaces', 2);	// Prettifies JSON
 		}
+
+		// Authentication strategies
+		this.passport.use(new LocalStrategy(
+			(username, password, done) => {
+				new User({username})
+				.fetch().then((user) => {
+					if (!user) {
+						return done(null, false, {message: 'Username not found'});
+					}
+
+					return user.verifyPassword(password)
+					.then((valid) => {
+						console.log('Verify', valid);
+						if (valid) {
+							return done(null, user);
+						}
+						else {
+							return done(null, false, {message: 'Invalid password'});
+						}
+					});
+				})
+				.catch((err) => {
+					return done(err);
+				});
+			}
+		));
+
+		this.passport.serializeUser((user, done) => {
+			done(null, user.get('id'));
+		});
+
+		this.passport.deserializeUser((id, done) => {
+			new User({id}).fetch().then((user) => {
+				done(null, user);
+			})
+			.catch((err) => {
+				done(err);
+			});
+		});
 	}
 
 	_loadMiddleware() {
@@ -84,11 +133,67 @@ export default class Lemon {
 
 		// Host Bootstrap's static files
 		this.app.use(express.static(constants.BOOTSTRAP_DIST));
+
+		const sessionMiddleware = session({
+			name: 'lemon.sid',
+			resave: true,
+			saveUninitialized: true,
+			secret: this.get('sessionSecret')
+		});
+
+		// Load session middleware
+		this.app.use(sessionMiddleware);
+		this.app.use(bodyParser.urlencoded({
+			extended: false
+		}));
+
+		// Load authentication middleware
+		this.app.use(this.passport.initialize());
+		this.app.use(this.passport.session());
+
+		this.io.use((socket, next) => {
+			sessionMiddleware(socket.request, {}, next);
+		});
+
+		// Expose some variables as locals to the view
+		this.app.use((req, res, next) => {
+			res.locals.user = req.user;
+			next();
+		});
 	}
 
 	_loadRoutes() {
 		this.app.get('/', (req, res) => {
 			res.render('index');
+		});
+
+		this.app.get('/login', (req, res) => {
+			res.render('login');
+		});
+
+		this.app.post('/login', (req, res, next) => {
+			this.passport.authenticate('local', (err, user/*, info*/) => {
+				if (err) {
+					return next(err);
+				}
+
+				if (!user) {
+					return res.redirect('/login');
+				}
+
+				req.logIn(user, (err) => {
+					if (err) {
+						return next(err);
+					}
+
+					return res.redirect('/');
+				});
+			})(req, res, next);
+		});
+
+		this.app.get('/logout', (req, res) => {
+			req.logout();
+			res.redirect('/');
 		});
 	}
 

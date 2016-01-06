@@ -1,11 +1,11 @@
 exports.up = function(knex, Promise) {
-	var user = knex.schema.createTableIfNotExists('user', (table) => {
+	var user = knex.schema.createTableIfNotExists('users', (table) => {
 		table.increments('id');
 		table.string('username').notNullable().unique();
 		table.string('password').notNullable();
 	});
 
-	var friend = knex.schema.createTableIfNotExists('friend', (table) => {
+	var friend = knex.schema.createTableIfNotExists('friends', (table) => {
 		table.increments('id');
 		table.integer('user_id').notNullable().unique().references('id').inTable('user');
 		table.integer('friend_id').notNullable().unique().references('id').inTable('user');
